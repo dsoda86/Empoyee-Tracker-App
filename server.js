@@ -68,4 +68,82 @@ const promptUser = () => {
 // Run the prompt
 promptUser();
 
+const viewDepartments = () => {
+    db.query(`SELECT * FROM department`, function (err, results) {
+        console.log(`\n`);
+        console.table(results);
+        promptUser();
+    })
+}
 
+const viewRoles = () => {
+    db.query(`SELECT * FROM roles`, function (err, results) {
+        console.log(`\n`);
+        console.table(results);
+        promptUser();
+    })
+}
+
+const viewEmployees = () => {
+    db.query(`
+    SELECT 
+        employees_with_managers.id AS employee_id,
+        employees_with_managers.first_name,
+        employees_with_managers.last_name,
+        employee_info.title,
+        employee_info.salary,
+        employee_info.department_name,
+        employees_with_managers.manager_name
+    FROM
+        employee_info
+    JOIN
+        employees_with_managers
+    ON 
+        employee_info.role_id = employees_with_managers.role_id;
+    `, function (err, results) {
+        console.log(`\n`);
+        console.table(results);
+        promptUser();
+    })
+}
+
+const addDepartment = () => {
+    return inquirer.prompt([
+        {
+            type: "input",
+            name: "name",
+            message: "What is the name of the new department being added?"
+            
+        }
+    ])
+    .then((data) => {
+        db.query(`INSERT INTO department (name) VALUES (?)`, data.name, (err, results) => {
+            console.log(`\nNew department has been added to the database.`);
+            viewDepartments();
+        })
+    })
+}
+const addRole = () => {
+    let departmentArray = [];
+    db.query(`SELECT * FROM department`, function (err, results) {
+        for (let i = 0; i < results.length; i++) {
+            departmentArray.push(results[i].name);
+        }
+        return inquirer.prompt([
+            {
+                type: "input",
+                name: "title",
+                message: "What would you like title the new role?",
+            },
+            {
+                type: "input",
+                name: "salary",
+                message: "What is salary of this new role?",
+            },
+            {
+                type: "list",
+                
+            }
+        ])
+    })
+}
