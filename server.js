@@ -133,7 +133,7 @@ const addRole = () => {
             {
                 type: "input",
                 name: "title",
-                message: "What would you like title the new role?",
+                message: "What would you like to title the new role?",
             },
             {
                 type: "input",
@@ -142,8 +142,85 @@ const addRole = () => {
             },
             {
                 type: "list",
-                
+                name: "department",
+                message: "What department is the new role assigned to?",
+                choices: departmentArray,
             }
         ])
+        .then((data) => {
+            // Get's department id
+            db.query(`SELECT id FROM department WHERE department.name = ?`, data.department, (err, results) => {
+                let department_id = results[0].id;
+            db.query(`INSERT INTO roles(title, salary, department_id) VALUES (?,?,?)`, [data.title, data.salary, department_id], (err, results) => {
+                console.log("\nNew role added. See below:");
+                viewRoles();
+            })
+            });
+        })
+    })
+}
+
+const addEmployee = () => {
+    // Creating empty arrays to be filled
+    const rolesArray = [];
+    const employeesArray = [];
+    // Fills rolesArray with all roles
+    db.query(`SELECT * FROM roles`, function (err, results) {
+        for (let i = 0; i < results.length; i++) {
+            let employeeName = `${results[i].first_name} ${results[i].last_name}`
+            employeesArray.push(employeeName);
+        }
+        return inquirer.prompt([
+            {
+                type: "input",
+                name: "first_name",
+                message: "What is the employee's first name?",
+            },
+            {
+                type: "input",
+                name: "last_name",
+                message: "What is the employee's last name?",
+            },
+            {
+                type: "list",
+                name: "role",
+                message: "what is the employee's role?",
+                choices: rolesArray
+            },
+            {
+                type: "list",
+                name: "has_manager",
+                message: "Does the employee have a manger?",
+                choices: ["YES", "NO"]
+            }
+        ]).then((data) => {
+            let roleName = data.role;
+            let first_name = data.first_name;
+            let last_name = data.last_name;
+            let role_id = "";
+            let manager = "";
+            //fills empty string of role_id
+            db.query(`SELECT is FROM role WHERE role.title = ?`, data.role, (err,results) => {
+                role_id = results[0].id
+            });
+            if (data.has_manager === "YES") {
+                return inquirer.prompt([
+                    {
+                        type: "list",
+                        name: "manager",
+                        message: "Please select the employee's manager from the list",
+                        choices: employeesArray
+                    }
+                ]).then((data) => {
+                    db.query(`SELECT id FROM role WHERE role.title = ?`, roleName, (err, results) => {
+                        role_id = results[0].id;
+                    })
+                    db.query(`SELECT id FROM employee WHERE employee.first_name = ? AND employee.last_name = ?`, data.manager.split(" "), (err, results) => {
+                        manager = results[0].id;
+                        db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES(?,?,?,?)`, [first_name, last_name, role_id, manager])
+                    })
+                })
+            }
+        })
     })
 }
