@@ -1,6 +1,6 @@
-const express = require("express");
 const inquirer = require("inquirer");
-const consoleTable = require("console.table")
+const consoleTable = require("console.table");
+const mysql = require("mysql2");
 
 const db = mysql.createConnection(
     {
@@ -20,7 +20,7 @@ const promptUser = () => {
             type: "list",
             name: "choice",
             message: "What would you like to do?",
-            choices: [ "VIEW all Departments", "VIEW all Roles", " VIEW all Employees", "ADD a Department", "ADD a Role", "ADD an Employee", "UPDATE an Employee Role"]
+            choices: [ "VIEW all Departments", "VIEW all Roles", "VIEW all Employees", "ADD a Department", "ADD a Role", "ADD an Employee", "UPDATE an Employee Role"]
 
         }
     ])
@@ -63,7 +63,7 @@ const promptUser = () => {
       
         }
     })
-};
+}
 
 // Run the prompt
 promptUser();
@@ -77,7 +77,7 @@ const viewDepartments = () => {
 }
 
 const viewRoles = () => {
-    db.query(`SELECT * FROM roles`, function (err, results) {
+    db.query(`SELECT * FROM role`, function (err, results) {
         console.log(`\n`);
         console.table(results);
         promptUser();
@@ -200,7 +200,7 @@ const addEmployee = () => {
             let role_id = "";
             let manager = "";
             //fills empty string of role_id
-            db.query(`SELECT is FROM role WHERE role.title = ?`, data.role, (err,results) => {
+            db.query(`SELECT is FROM role WHERE role.title = ?`, roleName, (err,results) => {
                 role_id = results[0].id
             });
             if (data.has_manager === "YES") {
@@ -243,7 +243,7 @@ const updateEmployeeRole = () => {
         }
 
     db.query(`SELECT * FROM employee`, function (err, results) {
-        for (let i = 0; i < results.legth; i++) {
+        for (let i = 0; i < results.length; i++) {
             let employeeName = `${results[i].first_name} ${results[i].last_name}`
             employeesArray.push(employeeName);
         }
