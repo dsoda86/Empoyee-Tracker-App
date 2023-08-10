@@ -85,8 +85,8 @@ const viewRoles = () => {
 }
 
 const viewEmployees = () => {
-    db.query(`
-    SELECT 
+    db.query(
+    `SELECT 
         employees_with_managers.id AS employee_id,
         employees_with_managers.first_name,
         employees_with_managers.last_name,
